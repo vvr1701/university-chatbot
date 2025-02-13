@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict
+import os
+import uvicorn
 
 app = FastAPI()
 
@@ -34,6 +36,5 @@ def chat(request: ChatRequest):
     return {"answer": answer}
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    port = int(os.environ.get("PORT", 10000))  # Default to 10000 if PORT is not set
+    uvicorn.run(app, host="0.0.0.0", port=port)
