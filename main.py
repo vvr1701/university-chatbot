@@ -7,7 +7,10 @@ import uvicorn
 app = FastAPI()
 
 # Mock user database
-users_db = {"12345": {"email": "student1@example.com"}, "67890": {"email": "student2@example.com"}}
+users_db = {
+    "12345": {"email": "student1@example.com"},
+    "67890": {"email": "student2@example.com"}
+}
 
 # Sample question-answer dataset
 responses: Dict[str, str] = {
@@ -16,6 +19,7 @@ responses: Dict[str, str] = {
     "Define virtual memory.": "Virtual memory allows a process to use more memory than physically available by using disk storage."
 }
 
+# Request models
 class LoginRequest(BaseModel):
     roll_no: str
     email: str
@@ -23,6 +27,10 @@ class LoginRequest(BaseModel):
 class ChatRequest(BaseModel):
     question: str
     roll_no: str
+
+@app.get("/")
+def home():
+    return {"message": "FastAPI is working on Render!"}
 
 @app.post("/login")
 def login(user: LoginRequest):
@@ -32,9 +40,12 @@ def login(user: LoginRequest):
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    if request.roll_no not in users_db:
+        raise HTTPException(status_code=403, detail="Unauthorized user")
+
     answer = responses.get(request.question, "I'm still learning. Please check the syllabus.")
     return {"answer": answer}
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Default to 10000 if PORT is not set
+    port = int(os.environ.get("PORT", 10000))  # Use Render's assigned PORT
     uvicorn.run(app, host="0.0.0.0", port=port)
