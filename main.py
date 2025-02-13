@@ -5,6 +5,7 @@ import os
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow frontend to access backend
@@ -14,7 +15,6 @@ app.add_middleware(
 )
 
 
-app = FastAPI()
 
 # Mock user database
 users_db = {
