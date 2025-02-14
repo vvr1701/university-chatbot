@@ -5,15 +5,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const chatBox = document.getElementById("chat-box");
     const logoutButton = document.getElementById("logout");
 
-    const API_URL = "https://university-chatbot-tbh3.onrender.com";
+    const API_URL = "https://university-chatbot-tbh3.onrender.com"; // ✅ Correct API URL
 
-    // Function to save login info in local storage
+    // Save user info in local storage
     function saveUserInfo(rollNumber, email) {
         localStorage.setItem("rollNumber", rollNumber);
         localStorage.setItem("email", email);
     }
 
-    // Function to check login status
+    // Check if user is logged in
     function checkLoginStatus() {
         const rollNumber = localStorage.getItem("rollNumber");
         const email = localStorage.getItem("email");
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Handle login
+    // Handle Login
     loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         const rollNumber = document.getElementById("roll-number").value;
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (rollNumber && email) {
             try {
-                const response = await fetch(`${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}/login`, {
+                const response = await fetch(`${API_URL}/login`, { // ✅ Fixed API URL
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ roll_no: rollNumber, email: email }),
@@ -46,12 +46,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("Login failed: " + data.detail);
                 }
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Network Error:", error);
+                alert("Unable to connect to server. Please try again later.");
             }
         }
     });
 
-    // Handle chat message submission
+    // Handle Chat Message Submission
     chatForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         const message = messageInput.value.trim();
@@ -62,9 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Show user message
         chatBox.innerHTML += `<div class="user-message">You: ${message}</div>`;
 
-        // Send message to backend
         try {
-            const response = await fetch(`${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}/chat`, {
+            const response = await fetch(`${API_URL}/chat`, { // ✅ Fixed API URL
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ question: message, roll_no: rollNumber }),
@@ -73,14 +73,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             chatBox.innerHTML += `<div class="bot-message">Bot: ${data.answer}</div>`;
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Network Error:", error);
             chatBox.innerHTML += `<div class="error-message">Error fetching response</div>`;
         }
 
         messageInput.value = "";
     });
 
-    // Handle logout
+    // Handle Logout
     logoutButton.addEventListener("click", function () {
         localStorage.removeItem("rollNumber");
         localStorage.removeItem("email");
