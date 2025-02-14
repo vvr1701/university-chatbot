@@ -1,5 +1,5 @@
 uvicorn
 fastapi
-openai>=1.0.0
+together
 pydantic
 fastapi[all]
