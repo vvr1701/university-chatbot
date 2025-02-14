@@ -59,12 +59,15 @@ def chat(request: ChatRequest):
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
 
     try:
-        response = openai.ChatCompletion.create(
+        client = OpenAI(api_key=OPENAI_API_KEY)  # ✅ Initialize OpenAI client
+
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": request.question}]
         )
-        answer = response["choices"][0]["message"]["content"]
+        answer = response.choices[0].message.content  # ✅ Extract response correctly
         return {"answer": answer}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"🔴 OpenAI Error: {str(e)}")
 
