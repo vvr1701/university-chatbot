@@ -26,16 +26,38 @@ if not OPENAI_API_KEY:
 
 openai.api_key = OPENAI_API_KEY
 
+# Simulated user database (Replace with a real database)
+USER_DATABASE = {
+    "2320030282": "vishnuvardhan1701@gmail.com",
+    "1234567890": "test@example.com"
+}
+
 # Request models
+class LoginRequest(BaseModel):
+    roll_no: str
+    email: str
+
 class ChatRequest(BaseModel):
+    roll_no: str
     question: str
 
 @app.get("/")
 def home():
     return {"message": "FastAPI is working with ChatGPT!"}
 
+# 🔹 LOGIN ROUTE
+@app.post("/login")
+def login(request: LoginRequest):
+    if request.roll_no in USER_DATABASE and USER_DATABASE[request.roll_no] == request.email:
+        return {"success": True, "message": "Login successful"}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+# 🔹 CHAT ROUTE (Requires authentication)
 @app.post("/chat")
 def chat(request: ChatRequest):
+    if request.roll_no not in USER_DATABASE:
+        raise HTTPException(status_code=401, detail="Unauthorized user")
+
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -49,3 +71,4 @@ def chat(request: ChatRequest):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
