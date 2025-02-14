@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 # OpenAI API Key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("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")
 if not OPENAI_API_KEY:
     raise ValueError("❌ Missing OpenAI API key. Set OPENAI_API_KEY in environment variables.")
 
