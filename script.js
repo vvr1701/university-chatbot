@@ -1,28 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ Page Loaded!");
+
     const loginForm = document.getElementById("login-form");
     const chatForm = document.getElementById("chat-form");
-    const messageInput = document.getElementById("message");
-    const chatBox = document.getElementById("chat-box");
+    const messageInput = document.getElementById("question");
+    const chatBox = document.getElementById("chatBox");
     const logoutButton = document.getElementById("logout");
 
     const API_URL = "https://university-chatbot-tbh3.onrender.com"; // ✅ Backend URL
 
-    // Save user info in local storage
+    // ✅ Save user info in local storage
     function saveUserInfo(rollNumber, email) {
         localStorage.setItem("rollNumber", rollNumber);
         localStorage.setItem("email", email);
     }
 
-    // Check login status
+    // ✅ Check login status
     function checkLoginStatus() {
         const rollNumber = localStorage.getItem("rollNumber");
         if (rollNumber) {
-            document.getElementById("login-section").style.display = "none";
-            document.getElementById("chat-section").style.display = "block";
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("chatPage").classList.remove("hidden");
         }
     }
 
-    // Handle Login
+    // ✅ Handle Login
     loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         const rollNumber = document.getElementById("roll-number").value.trim();
@@ -33,8 +35,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        console.log("📌 Sending login request...");
+        console.log("🔹 Data Sent:", { roll_no: rollNumber, email: email });
+
         try {
-            console.log("📌 Sending login request...");
             const response = await fetch(`${API_URL}/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -45,9 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("✅ Login Response:", data);
 
             if (response.status === 200 && data.success) {
+                alert("✅ Login successful!");
                 saveUserInfo(rollNumber, email);
-                document.getElementById("login-section").style.display = "none";
-                document.getElementById("chat-section").style.display = "block";
+                document.getElementById("loginPage").classList.add("hidden");
+                document.getElementById("chatPage").classList.remove("hidden");
             } else {
                 alert("❌ Login failed: " + (data.detail || "Invalid credentials"));
             }
@@ -57,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Handle Chat Submission
+    // ✅ Handle Chat Submission
     chatForm.addEventListener("submit", async function (event) {
         event.preventDefault();
         const message = messageInput.value.trim();
@@ -65,13 +70,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!message || !rollNumber) return;
 
-        // Show user message & loading indicator
         chatBox.innerHTML += `<div class="user-message">You: ${message}</div>`;
         const loadingMessage = document.createElement("div");
         loadingMessage.className = "loading-message";
         loadingMessage.innerText = "Bot is typing...";
         chatBox.appendChild(loadingMessage);
-        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             console.log("📌 Sending chat request...");
@@ -84,8 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             console.log("✅ Chat Response:", data);
 
-            // Remove loading message
-            if (loadingMessage) loadingMessage.remove();
+            loadingMessage.remove();
 
             if (response.status === 200) {
                 chatBox.innerHTML += `<div class="bot-message">Bot: ${data.answer}</div>`;
@@ -98,17 +101,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         messageInput.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+        chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    // Handle Logout
+    // ✅ Handle Logout
     logoutButton.addEventListener("click", function () {
         localStorage.removeItem("rollNumber");
         localStorage.removeItem("email");
-        document.getElementById("login-section").style.display = "block";
-        document.getElementById("chat-section").style.display = "none";
+        document.getElementById("loginPage").classList.remove("hidden");
+        document.getElementById("chatPage").classList.add("hidden");
     });
 
-    // Check login status on page load
+    // ✅ Check login status on page load
     checkLoginStatus();
 });
