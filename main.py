@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 import uvicorn
-from openai import OpenAI  # ✅ Correct import
+import together  # ✅ Import Together.AI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
@@ -17,14 +17,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# OpenAI API Key
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError("❌ Missing OpenAI API key. Set OPENAI_API_KEY in environment variables.")
+# ✅ Together AI API Key
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
+if not TOGETHER_API_KEY:
+    raise ValueError("❌ Missing Together AI API key. Set TOGETHER_API_KEY in environment variables.")
 
-client = OpenAI(api_key=OPENAI_API_KEY)  # ✅ Initialize OpenAI client
+together.api_key = TOGETHER_API_KEY  # ✅ Initialize Together AI
 
-# ✅ User database (Dummy)
+# ✅ Dummy user database
 USER_DATABASE = {
     "2320030282": "vishnuvardhan1701@gmail.com",
     "2320030271": "2320030271@klh.edu.in"
@@ -42,7 +42,7 @@ class ChatRequest(BaseModel):
 # ✅ Home route
 @app.get("/")
 def home():
-    return {"message": "🚀 FastAPI chatbot backend is running!"}
+    return {"message": "🚀 FastAPI chatbot backend is running with LLaMA!"}
 
 # 🔹 LOGIN ROUTE
 @app.post("/login")
@@ -51,22 +51,23 @@ def login(request: LoginRequest):
         return {"success": True, "message": "✅ Login successful", "token": f"auth_{request.roll_no}"}
     raise HTTPException(status_code=401, detail="❌ Invalid Roll Number or Email")
 
-# 🔹 CHAT ROUTE (Updated OpenAI API)
+# 🔹 CHAT ROUTE (Using LLaMA via Together.AI)
 @app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": request.question}]
+        response = together.Complete.create(
+            prompt=request.question,
+            model="meta-llama/Llama-2-7b-chat-hf",  # ✅ Use LLaMA-2 (You can switch to LLaMA-13B)
+            max_tokens=200
         )
-        answer = response.choices[0].message.content  # ✅ Correct way to extract the answer
+        answer = response["output"]["choices"][0]["text"].strip()  # ✅ Extract response
         return {"answer": answer}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"🔴 OpenAI Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"🔴 LLaMA API Error: {str(e)}")
 
 # ✅ Run the FastAPI server (For local testing)
 if __name__ == "__main__":
