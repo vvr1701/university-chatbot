@@ -60,14 +60,20 @@ def chat(request: ChatRequest):
     try:
         response = together.Complete.create(
             prompt=request.question,
-            model="meta-llama/Llama-2-7b-chat-hf",  # ✅ Use LLaMA-2 (You can switch to LLaMA-13B)
+            model="meta-llama/Llama-2-7b-chat-hf",
             max_tokens=200
         )
-        answer = response["output"]["choices"][0]["text"].strip()  # ✅ Extract response
-        return {"answer": answer}
+
+        # ✅ Check correct response structure
+        if "choices" in response and len(response["choices"]) > 0:
+            answer = response["choices"][0]["text"].strip()
+            return {"answer": answer}
+        else:
+            raise HTTPException(status_code=500, detail="🔴 LLaMA API Error: Unexpected response format")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"🔴 LLaMA API Error: {str(e)}")
+
 
 # ✅ Run the FastAPI server (For local testing)
 if __name__ == "__main__":
