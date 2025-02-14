@@ -2,30 +2,29 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 import uvicorn
-import openai
+from openai import OpenAI  # ✅ Correct import
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
 app = FastAPI()
 
-# Enable CORS (Required for frontend to work)
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow frontend to access backend
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# OpenAI API Key (Set this in Render environment variables)
+# OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
 if not OPENAI_API_KEY:
     raise ValueError("❌ Missing OpenAI API key. Set OPENAI_API_KEY in environment variables.")
 
-openai.api_key = OPENAI_API_KEY  # Initialize OpenAI API key
+client = OpenAI(api_key=OPENAI_API_KEY)  # ✅ Initialize OpenAI client
 
-# ✅ Simulated user database (Replace with a real database)
+# ✅ User database (Dummy)
 USER_DATABASE = {
     "2320030282": "vishnuvardhan1701@gmail.com",
     "2320030271": "2320030271@klh.edu.in"
@@ -40,7 +39,7 @@ class ChatRequest(BaseModel):
     roll_no: str
     question: str
 
-# ✅ Home route (Check if API is working)
+# ✅ Home route
 @app.get("/")
 def home():
     return {"message": "🚀 FastAPI chatbot backend is running!"}
@@ -52,20 +51,18 @@ def login(request: LoginRequest):
         return {"success": True, "message": "✅ Login successful", "token": f"auth_{request.roll_no}"}
     raise HTTPException(status_code=401, detail="❌ Invalid Roll Number or Email")
 
-# 🔹 CHAT ROUTE (Requires valid roll number)
+# 🔹 CHAT ROUTE (Updated OpenAI API)
 @app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
 
     try:
-        client = OpenAI(api_key=OPENAI_API_KEY)  # ✅ Initialize OpenAI client
-
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": request.question}]
         )
-        answer = response.choices[0].message.content  # ✅ Extract response correctly
+        answer = response.choices[0].message.content  # ✅ Correct way to extract the answer
         return {"answer": answer}
 
     except Exception as e:
