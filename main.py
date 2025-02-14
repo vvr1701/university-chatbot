@@ -29,7 +29,7 @@ openai.api_key = OPENAI_API_KEY
 # Simulated user database (Replace with a real database)
 USER_DATABASE = {
     "2320030282": "vishnuvardhan1701@gmail.com",
-    "1234567890": "test@example.com"
+    "2320030271": "2320030271@klh.edu.in"
 }
 
 # Request models
