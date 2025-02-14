@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 import uvicorn
@@ -8,10 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 # Initialize FastAPI app
 app = FastAPI()
 
-# Enable CORS (for frontend communication)
+# Enable CORS (Required for frontend to work)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (Change this in production)
+    allow_origins=["*"],  # Allow frontend to access backend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,5 +72,3 @@ def chat(request: ChatRequest):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
- 
