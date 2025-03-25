@@ -54,6 +54,7 @@ def login(request: LoginRequest):
 @app.post("/chat")
 # 🔹 CHAT ROUTE (Debugging version)
 @app.post("/chat")
+@app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
@@ -70,19 +71,20 @@ def chat(request: ChatRequest):
         }
         
         response = requests.post("https://api.together.ai/v1/chat/completions", json=data, headers=headers)
-        response_json = response.json()
+        
+        # ✅ Debugging: Print full response
+        print("🔍 Full API Response:", response.text)  # Print raw response
 
-        print("🔍 API Response:", response_json)  # Debugging line
+        response_json = response.json()
 
         if "choices" in response_json and len(response_json["choices"]) > 0:
             answer = response_json["choices"][0]["message"]["content"].strip()
             return {"answer": answer}
         else:
-            return {"error": "Unexpected response format", "details": response_json}  # Return full response for debugging
+            return {"error": "Unexpected response format", "details": response_json}  
 
     except Exception as e:
         return {"error": "🔴 API Error", "details": str(e)}
-
 
 
 # ✅ Run the FastAPI server (For local testing)
