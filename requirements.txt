@@ -3,3 +3,4 @@ fastapi
 together
 pydantic
 fastapi[all]
+llama-stack
