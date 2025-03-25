@@ -52,6 +52,8 @@ def login(request: LoginRequest):
 
 # 🔹 CHAT ROUTE (Using Gemma 7B via Together.AI)
 @app.post("/chat")
+# 🔹 CHAT ROUTE (Debugging version)
+@app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
@@ -63,21 +65,24 @@ def chat(request: ChatRequest):
         }
         
         data = {
-            "model": "google/gemma-7b-it",  # ✅ Replaced Mistral with Gemma 7B
+            "model": "google/gemma-7b-it",
             "messages": [{"role": "user", "content": request.question}]
         }
         
         response = requests.post("https://api.together.ai/v1/chat/completions", json=data, headers=headers)
         response_json = response.json()
 
+        print("🔍 API Response:", response_json)  # Debugging line
+
         if "choices" in response_json and len(response_json["choices"]) > 0:
             answer = response_json["choices"][0]["message"]["content"].strip()
             return {"answer": answer}
         else:
-            raise HTTPException(status_code=500, detail="🔴 API Error: Unexpected response format")
+            return {"error": "Unexpected response format", "details": response_json}  # Return full response for debugging
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"🔴 API Error: {str(e)}")
+        return {"error": "🔴 API Error", "details": str(e)}
+
 
 
 # ✅ Run the FastAPI server (For local testing)
