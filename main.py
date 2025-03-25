@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 import uvicorn
-import together  # ✅ Import Together.AI
+import requests  # ✅ Use requests instead of together package
 from fastapi.middleware.cors import CORSMiddleware
 
 # Initialize FastAPI app
@@ -22,8 +22,6 @@ TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 if not TOGETHER_API_KEY:
     raise ValueError("❌ Missing Together AI API key. Set TOGETHER_API_KEY in environment variables.")
 
-together.api_key = TOGETHER_API_KEY  # ✅ Initialize Together AI
-
 # ✅ Dummy user database
 USER_DATABASE = {
     "2320030282": "vishnuvardhan1701@gmail.com",
@@ -42,7 +40,7 @@ class ChatRequest(BaseModel):
 # ✅ Home route
 @app.get("/")
 def home():
-    return {"message": "🚀 FastAPI chatbot backend is running with LLaMA!"}
+    return {"message": "🚀 FastAPI chatbot backend is running with Mistral 7B!"}
 
 # 🔹 LOGIN ROUTE
 @app.post("/login")
@@ -51,28 +49,34 @@ def login(request: LoginRequest):
         return {"success": True, "message": "✅ Login successful", "token": f"auth_{request.roll_no}"}
     raise HTTPException(status_code=401, detail="❌ Invalid Roll Number or Email")
 
-# 🔹 CHAT ROUTE (Using LLaMA via Together.AI)
+# 🔹 CHAT ROUTE (Using Mistral 7B via Together.AI)
 @app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
         raise HTTPException(status_code=401, detail="❌ Unauthorized user")
 
     try:
-        response = together.Complete.create(
-            prompt=request.question,
-            model="meta-llama/Llama-2-7b-chat-hf",
-            max_tokens=200
-        )
+        headers = {
+            "Authorization": f"Bearer {TOGETHER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "mistral/mistral-7b-instruct",  # ✅ Replaced LLaMA with Mistral 7B
+            "messages": [{"role": "user", "content": request.question}]
+        }
+        
+        response = requests.post("https://api.together.ai/v1/chat/completions", json=data, headers=headers)
+        response_json = response.json()
 
-        # ✅ Check correct response structure
-        if "choices" in response and len(response["choices"]) > 0:
-            answer = response["choices"][0]["text"].strip()
+        if "choices" in response_json and len(response_json["choices"]) > 0:
+            answer = response_json["choices"][0]["message"]["content"].strip()
             return {"answer": answer}
         else:
-            raise HTTPException(status_code=500, detail="🔴 LLaMA API Error: Unexpected response format")
+            raise HTTPException(status_code=500, detail="🔴 API Error: Unexpected response format")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"🔴 LLaMA API Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"🔴 API Error: {str(e)}")
 
 
 # ✅ Run the FastAPI server (For local testing)
