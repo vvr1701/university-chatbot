@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
@@ -40,7 +41,7 @@ class ChatRequest(BaseModel):
 # ✅ Home route
 @app.get("/")
 def home():
-    return {"message": "🚀 FastAPI chatbot backend is running with Mistral 7B!"}
+    return {"message": "🚀 FastAPI chatbot backend is running with Gemma 7B!"}
 
 # 🔹 LOGIN ROUTE
 @app.post("/login")
@@ -49,7 +50,7 @@ def login(request: LoginRequest):
         return {"success": True, "message": "✅ Login successful", "token": f"auth_{request.roll_no}"}
     raise HTTPException(status_code=401, detail="❌ Invalid Roll Number or Email")
 
-# 🔹 CHAT ROUTE (Using Mistral 7B via Together.AI)
+# 🔹 CHAT ROUTE (Using Gemma 7B via Together.AI)
 @app.post("/chat")
 def chat(request: ChatRequest):
     if request.roll_no not in USER_DATABASE:
@@ -62,7 +63,7 @@ def chat(request: ChatRequest):
         }
         
         data = {
-            "model": "mistral/mistral-7b-instruct",  # ✅ Replaced LLaMA with Mistral 7B
+            "model": "google/gemma-7b-it",  # ✅ Replaced Mistral with Gemma 7B
             "messages": [{"role": "user", "content": request.question}]
         }
         
